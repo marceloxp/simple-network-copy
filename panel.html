@@ -95,6 +95,7 @@
             <th class="col-type">Type</th>
             <th class="col-url">URL</th>
             <th class="col-size">Size</th>
+            <th class="col-actions" aria-label="Actions"></th>
           </tr>
         </thead>
         <tbody id="requests-body"></tbody>
@@ -108,6 +109,21 @@
     </div>
 
     <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+
+    <div id="preview-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="preview-modal-title">
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal-panel">
+        <header class="modal-header">
+          <h2 id="preview-modal-title">Preview</h2>
+          <button id="preview-modal-close" type="button" class="modal-close-btn" aria-label="Close">&times;</button>
+        </header>
+        <pre id="preview-modal-body" class="modal-body"></pre>
+        <footer class="modal-footer">
+          <button id="preview-modal-copy" type="button">Copy</button>
+          <button id="preview-modal-close-footer" type="button" data-close-modal>Close</button>
+        </footer>
+      </div>
+    </div>
 
     <script src="panel.js"></script>
   </body>

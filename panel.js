@@ -18,6 +18,14 @@ const fetchXhrFilterBtn = document.getElementById("fetch-xhr-filter");
 const preserveLogCheckbox = document.getElementById("preserve-log");
 const filterEmptyState = document.getElementById("filter-empty-state");
 const headerCheckbox = document.getElementById("header-checkbox");
+const previewModal = document.getElementById("preview-modal");
+const previewModalTitle = document.getElementById("preview-modal-title");
+const previewModalBody = document.getElementById("preview-modal-body");
+const previewModalCopyBtn = document.getElementById("preview-modal-copy");
+const previewModalCloseBtn = document.getElementById("preview-modal-close");
+const previewModalCloseFooterBtn = document.getElementById("preview-modal-close-footer");
+
+let previewMarkdown = "";
 
 const FETCH_XHR_TYPES = new Set(["fetch", "xhr"]);
 
@@ -269,6 +277,12 @@ function renderRequestRow(entry) {
     <td class="col-type" title="${getRequestType(harEntry)}">${getRequestType(harEntry)}</td>
     <td class="col-url" title="${url}">${url}</td>
     <td class="col-size">${formatBytes(size)}</td>
+    <td class="col-actions">
+      <div class="row-actions">
+        <button type="button" class="row-action-btn row-copy-btn">Copy</button>
+        <button type="button" class="row-action-btn row-preview-btn">Preview</button>
+      </div>
+    </td>
   `;
 
   const checkbox = row.querySelector(".row-checkbox");
@@ -279,6 +293,16 @@ function renderRequestRow(entry) {
     entry.selected = checkbox.checked;
     row.classList.toggle("selected", entry.selected);
     updateToolbar();
+  });
+
+  row.querySelector(".row-copy-btn").addEventListener("click", (event) => {
+    event.stopPropagation();
+    copyEntries([entry]);
+  });
+
+  row.querySelector(".row-preview-btn").addEventListener("click", (event) => {
+    event.stopPropagation();
+    openPreview(entry);
   });
 
   requestsBody.appendChild(row);
@@ -362,19 +386,61 @@ async function buildMarkdown(selectedEntries, options) {
   return sections.join("\n\n---\n\n");
 }
 
+async function copyEntries(entries) {
+  if (entries.length === 0) return;
+
+  try {
+    const markdown = await buildMarkdown(entries, getCopyOptions());
+    await navigator.clipboard.writeText(markdown);
+    const label = entries.length === 1 ? "1 request" : `${entries.length} requests`;
+    showToast(`Copied ${label} to clipboard.`);
+  } catch (error) {
+    showToast(`Copy failed: ${error.message}`, "error");
+  }
+}
+
 async function copySelected() {
   const selectedEntries = getSelectedEntries();
   if (selectedEntries.length === 0) return;
 
   copyBtn.disabled = true;
   try {
-    const markdown = await buildMarkdown(selectedEntries, getCopyOptions());
-    await navigator.clipboard.writeText(markdown);
-    showToast(`Copied ${selectedEntries.length} request(s) to clipboard.`);
-  } catch (error) {
-    showToast(`Copy failed: ${error.message}`, "error");
+    await copyEntries(selectedEntries);
   } finally {
     updateToolbar();
+  }
+}
+
+function closePreviewModal() {
+  previewModal.classList.add("hidden");
+  previewMarkdown = "";
+  previewModalBody.textContent = "";
+}
+
+async function openPreview(entry) {
+  previewModalTitle.textContent = "Preview";
+  previewModalBody.textContent = "Loading...";
+  previewModal.classList.remove("hidden");
+
+  try {
+    previewMarkdown = await buildMarkdown([entry], getCopyOptions());
+    previewModalBody.textContent = previewMarkdown;
+    previewModalTitle.textContent = `${entry.harEntry.request.method} ${entry.harEntry.request.url}`;
+  } catch (error) {
+    previewMarkdown = "";
+    previewModalBody.textContent = `Failed to load preview: ${error.message}`;
+    showToast(`Preview failed: ${error.message}`, "error");
+  }
+}
+
+async function copyPreviewMarkdown() {
+  if (!previewMarkdown) return;
+
+  try {
+    await navigator.clipboard.writeText(previewMarkdown);
+    showToast("Copied preview to clipboard.");
+  } catch (error) {
+    showToast(`Copy failed: ${error.message}`, "error");
   }
 }
 
@@ -416,6 +482,17 @@ fetchXhrFilterBtn.addEventListener("click", () => {
 });
 truncateEnabledCheckbox.addEventListener("change", updateToolbar);
 truncateMbInput.addEventListener("input", updateToolbar);
+previewModalCopyBtn.addEventListener("click", copyPreviewMarkdown);
+previewModalCloseBtn.addEventListener("click", closePreviewModal);
+previewModalCloseFooterBtn.addEventListener("click", closePreviewModal);
+previewModal.querySelectorAll("[data-close-modal]").forEach((element) => {
+  element.addEventListener("click", closePreviewModal);
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !previewModal.classList.contains("hidden")) {
+    closePreviewModal();
+  }
+});
 
 chrome.devtools.network.onRequestFinished.addListener(addRequest);
 chrome.devtools.network.onNavigated.addListener(handleNavigation);
