@@ -2,6 +2,7 @@ const requests = [];
 let seenRequests = new WeakSet();
 
 const copyBtn = document.getElementById("copy-btn");
+const copyBtnLabel = document.getElementById("copy-btn-label");
 const selectAllBtn = document.getElementById("select-all-btn");
 const clearSelectionBtn = document.getElementById("clear-selection-btn");
 const clearListBtn = document.getElementById("clear-list-btn");
@@ -198,7 +199,7 @@ function getSelectedEntries() {
 
 function updateToolbar() {
   const selectedCount = getSelectedEntries().length;
-  copyBtn.textContent = `Copy (${selectedCount})`;
+  copyBtnLabel.textContent = `Copy (${selectedCount})`;
   copyBtn.disabled = selectedCount === 0;
 
   const visibleEntries = getVisibleEntries();

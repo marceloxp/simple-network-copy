@@ -34,6 +34,9 @@ body {
 }
 
 button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font: inherit;
   color: #e8eaed;
   background: #3c4043;
@@ -41,6 +44,12 @@ button {
   border-radius: 4px;
   padding: 4px 10px;
   cursor: pointer;
+}
+
+.btn-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 button:hover:not(:disabled) {
