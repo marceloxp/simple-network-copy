@@ -6,6 +6,9 @@
 
 body {
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 12px;
   color: #e8eaed;
@@ -81,6 +84,31 @@ button:disabled {
   opacity: 0.45;
 }
 
+.filter-bar {
+  padding: 6px 10px;
+  border-bottom: 1px solid #3c4043;
+  background: #292a2d;
+}
+
+#url-filter {
+  width: 100%;
+  font: inherit;
+  color: #e8eaed;
+  background: #202124;
+  border: 1px solid #5f6368;
+  border-radius: 4px;
+  padding: 5px 8px;
+}
+
+#url-filter:focus {
+  outline: none;
+  border-color: #8ab4f8;
+}
+
+#url-filter::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
 .toast {
   position: fixed;
   bottom: 16px;
@@ -117,8 +145,9 @@ button:disabled {
 }
 
 .table-wrap {
+  flex: 1;
+  min-height: 0;
   overflow: auto;
-  height: calc(100vh - 49px);
 }
 
 table {
@@ -154,6 +183,10 @@ tbody tr:hover {
 
 tbody tr.selected {
   background: #1f2a44;
+}
+
+tbody tr.row-hidden {
+  display: none;
 }
 
 .col-check {

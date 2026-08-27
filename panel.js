@@ -12,7 +12,23 @@ const toastEl = document.getElementById("toast");
 const requestsBody = document.getElementById("requests-body");
 const requestsTable = document.getElementById("requests-table");
 const emptyState = document.getElementById("empty-state");
+const urlFilterInput = document.getElementById("url-filter");
+const filterEmptyState = document.getElementById("filter-empty-state");
 const headerCheckbox = document.getElementById("header-checkbox");
+
+function getUrlFilter() {
+  return urlFilterInput.value.trim().toLowerCase();
+}
+
+function entryMatchesFilter(entry) {
+  const filter = getUrlFilter();
+  if (!filter) return true;
+  return entry.harEntry.request.url.toLowerCase().includes(filter);
+}
+
+function getVisibleEntries() {
+  return requests.filter((entry) => entryMatchesFilter(entry));
+}
 
 function showToast(message, type = "success") {
   toastEl.textContent = message;
@@ -161,17 +177,36 @@ function updateToolbar() {
   copyBtn.textContent = `Copy (${selectedCount})`;
   copyBtn.disabled = selectedCount === 0;
 
-  const allSelected = requests.length > 0 && selectedCount === requests.length;
-  headerCheckbox.checked = allSelected;
-  headerCheckbox.indeterminate = selectedCount > 0 && !allSelected;
+  const visibleEntries = getVisibleEntries();
+  const selectedVisibleCount = visibleEntries.filter((entry) => entry.selected).length;
+  const allVisibleSelected =
+    visibleEntries.length > 0 && selectedVisibleCount === visibleEntries.length;
+  headerCheckbox.checked = allVisibleSelected;
+  headerCheckbox.indeterminate =
+    selectedVisibleCount > 0 && selectedVisibleCount < visibleEntries.length;
+  headerCheckbox.disabled = visibleEntries.length === 0;
 
   truncateMbInput.disabled = !truncateEnabledCheckbox.checked;
 }
 
+function applyUrlFilter() {
+  requests.forEach((entry) => {
+    const row = requestsBody.querySelector(`tr[data-id="${entry.id}"]`);
+    if (!row) return;
+    row.classList.toggle("row-hidden", !entryMatchesFilter(entry));
+  });
+  updateEmptyState();
+  updateToolbar();
+}
+
 function updateEmptyState() {
   const hasRequests = requests.length > 0;
+  const visibleCount = getVisibleEntries().length;
+  const hasFilter = getUrlFilter().length > 0;
+
   emptyState.classList.toggle("hidden", hasRequests);
-  requestsTable.classList.toggle("hidden", !hasRequests);
+  filterEmptyState.classList.toggle("hidden", !hasRequests || visibleCount > 0 || !hasFilter);
+  requestsTable.classList.toggle("hidden", !hasRequests || (hasFilter && visibleCount === 0));
 }
 
 function addRequest(harEntry) {
@@ -185,8 +220,7 @@ function addRequest(harEntry) {
   };
   requests.push(entry);
   renderRequestRow(entry);
-  updateEmptyState();
-  updateToolbar();
+  applyUrlFilter();
 }
 
 function renderRequestRow(entry) {
@@ -319,8 +353,9 @@ async function copySelected() {
   }
 }
 
-function setAllSelected(selected) {
-  requests.forEach((entry) => {
+function setAllSelected(selected, visibleOnly = false) {
+  const targets = visibleOnly ? getVisibleEntries() : requests;
+  targets.forEach((entry) => {
     entry.selected = selected;
     const row = requestsBody.querySelector(`tr[data-id="${entry.id}"]`);
     if (!row) return;
@@ -333,15 +368,15 @@ function setAllSelected(selected) {
 function clearList() {
   requests.length = 0;
   requestsBody.innerHTML = "";
-  updateEmptyState();
-  updateToolbar();
+  applyUrlFilter();
 }
 
 copyBtn.addEventListener("click", copySelected);
-selectAllBtn.addEventListener("click", () => setAllSelected(true));
+selectAllBtn.addEventListener("click", () => setAllSelected(true, true));
 clearSelectionBtn.addEventListener("click", () => setAllSelected(false));
 clearListBtn.addEventListener("click", clearList);
-headerCheckbox.addEventListener("change", () => setAllSelected(headerCheckbox.checked));
+headerCheckbox.addEventListener("change", () => setAllSelected(headerCheckbox.checked, true));
+urlFilterInput.addEventListener("input", applyUrlFilter);
 truncateEnabledCheckbox.addEventListener("change", updateToolbar);
 truncateMbInput.addEventListener("input", updateToolbar);
 
@@ -351,4 +386,4 @@ chrome.devtools.network.getHAR((harLog) => {
 });
 
 updateToolbar();
-updateEmptyState();
+applyUrlFilter();
