@@ -13,17 +13,40 @@ const requestsBody = document.getElementById("requests-body");
 const requestsTable = document.getElementById("requests-table");
 const emptyState = document.getElementById("empty-state");
 const urlFilterInput = document.getElementById("url-filter");
+const fetchXhrFilterBtn = document.getElementById("fetch-xhr-filter");
 const filterEmptyState = document.getElementById("filter-empty-state");
 const headerCheckbox = document.getElementById("header-checkbox");
+
+const FETCH_XHR_TYPES = new Set(["fetch", "xhr"]);
 
 function getUrlFilter() {
   return urlFilterInput.value.trim().toLowerCase();
 }
 
+function isFetchXhrFilterActive() {
+  return fetchXhrFilterBtn.getAttribute("aria-pressed") === "true";
+}
+
+function isFetchXhrEntry(entry) {
+  const type = getRequestType(entry.harEntry).toLowerCase();
+  return FETCH_XHR_TYPES.has(type);
+}
+
+function hasActiveFilters() {
+  return getUrlFilter().length > 0 || isFetchXhrFilterActive();
+}
+
 function entryMatchesFilter(entry) {
+  if (isFetchXhrFilterActive() && !isFetchXhrEntry(entry)) {
+    return false;
+  }
+
   const filter = getUrlFilter();
-  if (!filter) return true;
-  return entry.harEntry.request.url.toLowerCase().includes(filter);
+  if (filter && !entry.harEntry.request.url.toLowerCase().includes(filter)) {
+    return false;
+  }
+
+  return true;
 }
 
 function getVisibleEntries() {
@@ -189,7 +212,7 @@ function updateToolbar() {
   truncateMbInput.disabled = !truncateEnabledCheckbox.checked;
 }
 
-function applyUrlFilter() {
+function applyFilters() {
   requests.forEach((entry) => {
     const row = requestsBody.querySelector(`tr[data-id="${entry.id}"]`);
     if (!row) return;
@@ -202,7 +225,7 @@ function applyUrlFilter() {
 function updateEmptyState() {
   const hasRequests = requests.length > 0;
   const visibleCount = getVisibleEntries().length;
-  const hasFilter = getUrlFilter().length > 0;
+  const hasFilter = hasActiveFilters();
 
   emptyState.classList.toggle("hidden", hasRequests);
   filterEmptyState.classList.toggle("hidden", !hasRequests || visibleCount > 0 || !hasFilter);
@@ -220,7 +243,7 @@ function addRequest(harEntry) {
   };
   requests.push(entry);
   renderRequestRow(entry);
-  applyUrlFilter();
+  applyFilters();
 }
 
 function renderRequestRow(entry) {
@@ -368,7 +391,7 @@ function setAllSelected(selected, visibleOnly = false) {
 function clearList() {
   requests.length = 0;
   requestsBody.innerHTML = "";
-  applyUrlFilter();
+  applyFilters();
 }
 
 copyBtn.addEventListener("click", copySelected);
@@ -376,7 +399,12 @@ selectAllBtn.addEventListener("click", () => setAllSelected(true, true));
 clearSelectionBtn.addEventListener("click", () => setAllSelected(false));
 clearListBtn.addEventListener("click", clearList);
 headerCheckbox.addEventListener("change", () => setAllSelected(headerCheckbox.checked, true));
-urlFilterInput.addEventListener("input", applyUrlFilter);
+urlFilterInput.addEventListener("input", applyFilters);
+fetchXhrFilterBtn.addEventListener("click", () => {
+  const active = !isFetchXhrFilterActive();
+  fetchXhrFilterBtn.setAttribute("aria-pressed", String(active));
+  applyFilters();
+});
 truncateEnabledCheckbox.addEventListener("change", updateToolbar);
 truncateMbInput.addEventListener("input", updateToolbar);
 
@@ -386,4 +414,4 @@ chrome.devtools.network.getHAR((harLog) => {
 });
 
 updateToolbar();
-applyUrlFilter();
+applyFilters();

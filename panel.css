@@ -85,19 +85,45 @@ button:disabled {
 }
 
 .filter-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
   padding: 6px 10px;
   border-bottom: 1px solid #3c4043;
   background: #292a2d;
 }
 
 #url-filter {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   font: inherit;
   color: #e8eaed;
   background: #202124;
   border: 1px solid #5f6368;
   border-radius: 4px;
   padding: 5px 8px;
+}
+
+.filter-chip {
+  flex-shrink: 0;
+  font: inherit;
+  color: #bdc1c6;
+  background: #3c4043;
+  border: 1px solid #5f6368;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.filter-chip:hover {
+  background: #4a4d51;
+}
+
+.filter-chip[aria-pressed="true"] {
+  color: #e8f0fe;
+  background: #1a73e8;
+  border-color: #1a73e8;
 }
 
 #url-filter:focus {
