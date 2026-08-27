@@ -1,5 +1,5 @@
 const requests = [];
-const seenRequests = new WeakSet();
+let seenRequests = new WeakSet();
 
 const copyBtn = document.getElementById("copy-btn");
 const selectAllBtn = document.getElementById("select-all-btn");
@@ -14,6 +14,7 @@ const requestsTable = document.getElementById("requests-table");
 const emptyState = document.getElementById("empty-state");
 const urlFilterInput = document.getElementById("url-filter");
 const fetchXhrFilterBtn = document.getElementById("fetch-xhr-filter");
+const preserveLogCheckbox = document.getElementById("preserve-log");
 const filterEmptyState = document.getElementById("filter-empty-state");
 const headerCheckbox = document.getElementById("header-checkbox");
 
@@ -391,7 +392,14 @@ function setAllSelected(selected, visibleOnly = false) {
 function clearList() {
   requests.length = 0;
   requestsBody.innerHTML = "";
+  seenRequests = new WeakSet();
   applyFilters();
+}
+
+function handleNavigation() {
+  if (!preserveLogCheckbox.checked) {
+    clearList();
+  }
 }
 
 copyBtn.addEventListener("click", copySelected);
@@ -409,6 +417,7 @@ truncateEnabledCheckbox.addEventListener("change", updateToolbar);
 truncateMbInput.addEventListener("input", updateToolbar);
 
 chrome.devtools.network.onRequestFinished.addListener(addRequest);
+chrome.devtools.network.onNavigated.addListener(handleNavigation);
 chrome.devtools.network.getHAR((harLog) => {
   harLog.entries.forEach(addRequest);
 });

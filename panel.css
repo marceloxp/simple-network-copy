@@ -126,6 +126,11 @@ button:disabled {
   border-color: #1a73e8;
 }
 
+.preserve-log-option {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
 #url-filter:focus {
   outline: none;
   border-color: #8ab4f8;
