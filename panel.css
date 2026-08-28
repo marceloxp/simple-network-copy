@@ -217,11 +217,18 @@ tbody td {
   text-overflow: ellipsis;
 }
 
+tbody tr {
+  --row-bg: #202124;
+  position: relative;
+}
+
 tbody tr:hover {
+  --row-bg: #2a2d31;
   background: #2a2d31;
 }
 
 tbody tr.selected {
+  --row-bg: #1f2a44;
   background: #1f2a44;
 }
 
@@ -229,47 +236,51 @@ tbody tr.row-hidden {
   display: none;
 }
 
-.col-check {
-  width: 32px;
-}
-
-.col-method {
-  width: 72px;
-}
-
-.col-status {
-  width: 56px;
-}
-
-.col-type {
-  width: 72px;
-}
-
 .col-size {
+  position: relative;
   width: 72px;
   text-align: right;
+  overflow: visible;
 }
 
-.col-actions {
-  width: 128px;
+.size-text {
+  display: inline-block;
 }
 
-.col-url {
-  width: auto;
+tbody tr:hover .size-text,
+tbody tr:focus-within .size-text {
+  opacity: 0;
 }
 
-.row-actions {
+.row-overlay {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
   display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
   gap: 4px;
+  padding-left: 55vw;
+  background: linear-gradient(90deg, transparent, var(--row-bg) 72px);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s ease;
 }
 
-tbody tr:hover .row-actions,
-tbody tr:focus-within .row-actions {
+tbody tr:hover .row-overlay,
+tbody tr:focus-within .row-overlay {
   opacity: 1;
   pointer-events: auto;
+}
+
+.col-check {
+  width: 32px;
+}
+
+.col-url {
+  width: auto;
 }
 
 .row-action-btn {
@@ -285,6 +296,18 @@ tbody tr:focus-within .row-actions {
 
 .row-copy-btn:hover:not(:disabled) {
   background: #1967d2;
+}
+
+.col-method {
+  width: 72px;
+}
+
+.col-status {
+  width: 56px;
+}
+
+.col-type {
+  width: 72px;
 }
 
 .method-badge {

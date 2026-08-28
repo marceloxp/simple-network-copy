@@ -276,9 +276,9 @@ function renderRequestRow(entry) {
     <td class="col-status ${statusClass(status)}">${status || "—"}</td>
     <td class="col-type" title="${getRequestType(harEntry)}">${getRequestType(harEntry)}</td>
     <td class="col-url" title="${url}">${url}</td>
-    <td class="col-size">${formatBytes(size)}</td>
-    <td class="col-actions">
-      <div class="row-actions">
+    <td class="col-size">
+      <span class="size-text">${formatBytes(size)}</span>
+      <div class="row-overlay" aria-hidden="true">
         <button type="button" class="row-action-btn row-copy-btn">Copy</button>
         <button type="button" class="row-action-btn row-preview-btn">Preview</button>
       </div>
@@ -297,11 +297,13 @@ function renderRequestRow(entry) {
 
   row.querySelector(".row-copy-btn").addEventListener("click", (event) => {
     event.stopPropagation();
+    event.currentTarget.blur();
     copyEntries([entry]);
   });
 
   row.querySelector(".row-preview-btn").addEventListener("click", (event) => {
     event.stopPropagation();
+    event.currentTarget.blur();
     openPreview(entry);
   });
 
