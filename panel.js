@@ -97,6 +97,26 @@ function formatDuration(ms) {
   return `${(ms / 1000).toFixed(2)} s`;
 }
 
+const TIMING_PHASES = [
+  ["blocked", "blocked"],
+  ["dns", "dns"],
+  ["connect", "connect"],
+  ["send", "send"],
+  ["wait", "TTFB"],
+  ["receive", "download"],
+];
+
+function formatTimingBreakdown(harEntry) {
+  const timings = harEntry.timings;
+  if (!timings) return "—";
+
+  const parts = TIMING_PHASES
+    .filter(([key]) => Number.isFinite(timings[key]) && timings[key] > 0)
+    .map(([key, label]) => `${label} ${formatDuration(timings[key])}`);
+
+  return parts.length > 0 ? parts.join(" · ") : "—";
+}
+
 function getPayload(harEntry) {
   const postData = harEntry.request?.postData;
   if (!postData) return "";
@@ -387,6 +407,7 @@ async function buildMarkdown(selectedEntries, options) {
       `- URL: ${url}`,
       `- Status: ${status}`,
       `- Duration: ${formatDuration(harEntry.time)}`,
+      `- Timing: ${formatTimingBreakdown(harEntry)}`,
       "",
     ];
 

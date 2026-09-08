@@ -38,6 +38,7 @@ A Chrome DevTools extension that lists network requests and copies selected ones
 - URL: https://api.example.com/users
 - Status: 201
 - Duration: 142 ms
+- Timing: TTFB 98 ms · download 44 ms
 
 ### Payload
 
