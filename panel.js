@@ -15,6 +15,7 @@ const requestsTable = document.getElementById("requests-table");
 const emptyState = document.getElementById("empty-state");
 const urlFilterInput = document.getElementById("url-filter");
 const fetchXhrFilterBtn = document.getElementById("fetch-xhr-filter");
+const apiFilterBtn = document.getElementById("api-filter");
 const preserveLogCheckbox = document.getElementById("preserve-log");
 const filterEmptyState = document.getElementById("filter-empty-state");
 const headerCheckbox = document.getElementById("header-checkbox");
@@ -42,12 +43,20 @@ function isFetchXhrEntry(entry) {
   return FETCH_XHR_TYPES.has(type);
 }
 
+function isApiFilterActive() {
+  return apiFilterBtn.getAttribute("aria-pressed") === "true";
+}
+
 function hasActiveFilters() {
-  return getUrlFilter().length > 0 || isFetchXhrFilterActive();
+  return getUrlFilter().length > 0 || isFetchXhrFilterActive() || isApiFilterActive();
 }
 
 function entryMatchesFilter(entry) {
   if (isFetchXhrFilterActive() && !isFetchXhrEntry(entry)) {
+    return false;
+  }
+
+  if (isApiFilterActive() && !isApiEntry(entry)) {
     return false;
   }
 
@@ -82,6 +91,12 @@ function formatBytes(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
+function formatDuration(ms) {
+  if (!Number.isFinite(ms) || ms < 0) return "—";
+  if (ms < 1000) return `${Math.round(ms)} ms`;
+  return `${(ms / 1000).toFixed(2)} s`;
+}
+
 function getPayload(harEntry) {
   const postData = harEntry.request?.postData;
   if (!postData) return "";
@@ -95,6 +110,23 @@ function getPayload(harEntry) {
 function getContentType(headers, fallback) {
   const header = headers?.find((item) => item.name.toLowerCase() === "content-type");
   return header?.value || fallback || "";
+}
+
+function getResponseContentType(harEntry) {
+  return getContentType(harEntry.response.headers, harEntry.response.content?.mimeType || "");
+}
+
+function isApiResponseType(mimeType) {
+  const base = (mimeType || "").split(";")[0].trim().toLowerCase();
+  if (!base) return false;
+  if (base === "application/json" || base === "text/json") return true;
+  if (base.endsWith("+json")) return true;
+  if (base === "application/xml" || base === "text/xml") return true;
+  return false;
+}
+
+function isApiEntry(entry) {
+  return isApiResponseType(getResponseContentType(entry.harEntry));
 }
 
 function looksLikeJson(text) {
@@ -354,6 +386,7 @@ async function buildMarkdown(selectedEntries, options) {
       `- Method: ${method}`,
       `- URL: ${url}`,
       `- Status: ${status}`,
+      `- Duration: ${formatDuration(harEntry.time)}`,
       "",
     ];
 
@@ -480,6 +513,11 @@ urlFilterInput.addEventListener("input", applyFilters);
 fetchXhrFilterBtn.addEventListener("click", () => {
   const active = !isFetchXhrFilterActive();
   fetchXhrFilterBtn.setAttribute("aria-pressed", String(active));
+  applyFilters();
+});
+apiFilterBtn.addEventListener("click", () => {
+  const active = !isApiFilterActive();
+  apiFilterBtn.setAttribute("aria-pressed", String(active));
   applyFilters();
 });
 truncateEnabledCheckbox.addEventListener("change", updateToolbar);
