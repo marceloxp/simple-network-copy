@@ -41,8 +41,19 @@ let previewPaneHeight = PREVIEW_DEFAULT_HEIGHT;
 
 const FETCH_XHR_TYPES = new Set(["fetch", "xhr"]);
 
-function getUrlFilter() {
-  return urlFilterInput.value.trim().toLowerCase();
+function getUrlFilterTerms() {
+  return urlFilterInput.value
+    .toLowerCase()
+    .split("|")
+    .map((term) => term.trim())
+    .filter((term) => term.length > 0);
+}
+
+function urlMatchesFilter(url) {
+  const terms = getUrlFilterTerms();
+  if (terms.length === 0) return true;
+  const haystack = url.toLowerCase();
+  return terms.some((term) => haystack.includes(term));
 }
 
 function isFetchXhrFilterActive() {
@@ -59,7 +70,7 @@ function isApiFilterActive() {
 }
 
 function hasActiveFilters() {
-  return getUrlFilter().length > 0 || isFetchXhrFilterActive() || isApiFilterActive();
+  return getUrlFilterTerms().length > 0 || isFetchXhrFilterActive() || isApiFilterActive();
 }
 
 function entryMatchesFilter(entry) {
@@ -71,8 +82,7 @@ function entryMatchesFilter(entry) {
     return false;
   }
 
-  const filter = getUrlFilter();
-  if (filter && !entry.harEntry.request.url.toLowerCase().includes(filter)) {
+  if (!urlMatchesFilter(entry.harEntry.request.url)) {
     return false;
   }
 

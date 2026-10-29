@@ -11,7 +11,7 @@ A Chrome DevTools extension that lists network requests and copies selected ones
 - **Include headers** — optional toggle for request and response headers
 - **Truncate large bodies** — optional toggle with editable size limit (default: 3 MB)
 - **Markdown preview** — optional pane below the list; click a request to inspect the Markdown before copying
-- **Filters** — by URL, Fetch/XHR (JavaScript-initiated requests), and API (JSON/XML response bodies)
+- **Filters** — by URL (use `|` to match any of several terms), Fetch/XHR (JavaScript-initiated requests), and API (JSON/XML response bodies)
 
 ## Install (unpacked)
 
@@ -25,7 +25,7 @@ A Chrome DevTools extension that lists network requests and copies selected ones
 
 1. Open DevTools (**F12**) and switch to the **Network Copy** panel
 2. Reload the page or interact with it (requests are captured while DevTools is open)
-3. Optionally filter with **Fetch/XHR**, **API**, or the URL search box (filters combine with AND)
+3. Optionally filter with **Fetch/XHR**, **API**, or the URL search box (filters combine with AND). In the URL box, separate terms with `|` to match any of them — for example `visualize|home/store|send|/get`
 4. Select the requests you want with the checkboxes
 5. Optionally enable **Include headers** or adjust **Truncate bodies over X MB**
 6. Optionally enable **Preview**, then click a request to inspect its Markdown (drag the splitter to resize)
