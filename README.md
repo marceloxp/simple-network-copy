@@ -9,6 +9,7 @@ A Chrome DevTools extension that lists network requests and copies selected ones
 - **Multi-select** — checkboxes with Select all / Clear selection
 - **Copy as Markdown** — Method, URL, Status, Duration, Payload, and Response for each selected request
 - **Include headers** — optional toggle for request and response headers
+- **Include time** — optional toggle for the request date and time (local, with timezone offset)
 - **Truncate large bodies** — optional toggle with editable size limit (default: 3 MB)
 - **Markdown preview** — optional pane below the list; click a request to inspect the Markdown before copying
 - **Filters** — by URL (use `|` to match any of several terms), Fetch/XHR (JavaScript-initiated requests), and API (JSON/XML response bodies)
@@ -27,7 +28,7 @@ A Chrome DevTools extension that lists network requests and copies selected ones
 2. Reload the page or interact with it (requests are captured while DevTools is open)
 3. Optionally filter with **Fetch/XHR**, **API**, or the URL search box (filters combine with AND). In the URL box, separate terms with `|` to match any of them — for example `visualize|home/store|send|/get`
 4. Select the requests you want with the checkboxes
-5. Optionally enable **Include headers** or adjust **Truncate bodies over X MB**
+5. Optionally enable **Include headers**, **Include time**, or adjust **Truncate bodies over X MB**
 6. Optionally enable **Preview**, then click a request to inspect its Markdown (drag the splitter to resize)
 7. Click **Copy (N)** — the Markdown is on your clipboard
 
@@ -39,6 +40,7 @@ A Chrome DevTools extension that lists network requests and copies selected ones
 - Method: POST
 - URL: https://api.example.com/users
 - Status: 201
+- Time: 2026-10-29 18:40:12.123 -03:00
 - Duration: 142 ms
 - Timing: TTFB 98 ms · download 44 ms
 
@@ -55,7 +57,7 @@ A Chrome DevTools extension that lists network requests and copies selected ones
 ```
 ````
 
-Multiple requests are separated by `---`.
+Multiple requests are separated by `---`. The **Time** line appears only when **Include time** is enabled.
 
 ## Limitations
 

@@ -7,6 +7,7 @@ const selectAllBtn = document.getElementById("select-all-btn");
 const clearSelectionBtn = document.getElementById("clear-selection-btn");
 const clearListBtn = document.getElementById("clear-list-btn");
 const includeHeadersCheckbox = document.getElementById("include-headers");
+const includeTimeCheckbox = document.getElementById("include-time");
 const truncateEnabledCheckbox = document.getElementById("truncate-enabled");
 const truncateMbInput = document.getElementById("truncate-mb");
 const toastEl = document.getElementById("toast");
@@ -116,6 +117,24 @@ function formatDuration(ms) {
   if (!Number.isFinite(ms) || ms < 0) return "—";
   if (ms < 1000) return `${Math.round(ms)} ms`;
   return `${(ms / 1000).toFixed(2)} s`;
+}
+
+function formatRequestTime(startedDateTime) {
+  if (!startedDateTime) return "—";
+  const date = new Date(startedDateTime);
+  if (Number.isNaN(date.getTime())) return startedDateTime;
+
+  const pad = (value, width = 2) => String(value).padStart(width, "0");
+  const offsetMinutes = -date.getTimezoneOffset();
+  const sign = offsetMinutes >= 0 ? "+" : "-";
+  const absoluteOffset = Math.abs(offsetMinutes);
+  const offset = `${sign}${pad(Math.floor(absoluteOffset / 60))}:${pad(absoluteOffset % 60)}`;
+
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
+    `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.` +
+    `${pad(date.getMilliseconds(), 3)} ${offset}`
+  );
 }
 
 const TIMING_PHASES = [
@@ -404,6 +423,7 @@ function getCopyOptions() {
   const truncateMb = Number.parseFloat(truncateMbInput.value);
   return {
     includeHeaders: includeHeadersCheckbox.checked,
+    includeTime: includeTimeCheckbox.checked,
     truncateEnabled: truncateEnabledCheckbox.checked,
     truncateMb: Number.isFinite(truncateMb) && truncateMb > 0 ? truncateMb : 3,
   };
@@ -432,10 +452,17 @@ async function buildMarkdown(selectedEntries, options) {
       `- Method: ${method}`,
       `- URL: ${url}`,
       `- Status: ${status}`,
+    ];
+
+    if (options.includeTime) {
+      lines.push(`- Time: ${formatRequestTime(harEntry.startedDateTime)}`);
+    }
+
+    lines.push(
       `- Duration: ${formatDuration(harEntry.time)}`,
       `- Timing: ${formatTimingBreakdown(harEntry)}`,
-      "",
-    ];
+      ""
+    );
 
     if (options.includeHeaders) {
       const requestHeaders = formatHeadersTable(harEntry.request.headers);
@@ -722,6 +749,7 @@ apiFilterBtn.addEventListener("click", () => {
   applyFilters();
 });
 includeHeadersCheckbox.addEventListener("change", refreshPreview);
+includeTimeCheckbox.addEventListener("change", refreshPreview);
 truncateEnabledCheckbox.addEventListener("change", () => {
   updateToolbar();
   refreshPreview();
